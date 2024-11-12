@@ -25,9 +25,10 @@ const params = new URLSearchParams(window.location.search)
 const url = params.get('hostname') ?? 'localhost'
 const port = params.get('port') ?? '38281'
 const name = params.get('name') ?? 'Bingo'
+const password = params.get('password') ?? ''
 
 // Connect to the Archipelago server (replace url, slot name, and game as appropriate for your scenario).
-const slotdata = await client.login<BingoSlotData>(`${url}:${port}`, name, "APBingo")
+const slotdata = await client.login<BingoSlotData>(`${url}:${port}`, name, "APBingo", {password:password})
 
 const root = document.querySelector(":root") as HTMLElement
 root.style.setProperty("--tilesize",`${100/slotdata.boardSize}%`)
