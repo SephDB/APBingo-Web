@@ -24,11 +24,12 @@ type BingoSlotData = {
 const params = new URLSearchParams(window.location.search)
 const url = params.get('hostname') ?? 'localhost'
 const port = params.get('port') ?? '38281'
+const hostport = params.get('hostport') ?? `${url}:${port}`
 const name = params.get('name') ?? 'Bingo'
 const password = params.get('password') ?? ''
 
 // Connect to the Archipelago server (replace url, slot name, and game as appropriate for your scenario).
-const slotdata = await client.login<BingoSlotData>(`${url}:${port}`, name, "APBingo", {password:password})
+const slotdata = await client.login<BingoSlotData>(hostport, name, "APBingo", {password:password})
 
 const root = document.querySelector(":root") as HTMLElement
 root.style.setProperty("--tilesize",`${100/slotdata.boardSize}%`)
@@ -39,12 +40,15 @@ root.style.setProperty("--boardColor",slotdata.customBoard)
 
 const body = document.body, table = document.createElement("table")
 
-for (let i = 0; i < slotdata.boardSize; i++) {
+for (let y = 0; y < slotdata.boardSize; y++) {
   const tr = table.insertRow()
-  for(let j = 0; j < slotdata.boardSize; j++) {
+  for(let x = 0; x < slotdata.boardSize; x++) {
     const td = tr.insertCell()
+    td.id = `cell${new Square(x,y)}`
     const div = document.createElement("div")
-    div.appendChild(document.createTextNode(slotdata.boardLocations[i*slotdata.boardSize+j]))
+    div.appendChild(document.createTextNode(`${new Square(x,y)}`))
+    div.appendChild(document.createElement("br"))
+    div.appendChild(document.createTextNode(slotdata.boardLocations[y*slotdata.boardSize+x]))
     td.appendChild(div)
   }
 }
@@ -55,8 +59,8 @@ const bingo = new Bingo(slotdata.boardSize)
 function setReceived(item:string) {
   const sq = Square.fromName(item)
 
-  const cell = table.querySelector(`tr:nth-child(${sq.y+1}) td:nth-child(${sq.x+1})`) as HTMLTableRowElement
-  cell.classList.add("checked")
+  const cell = document.getElementById(`cell${sq}`)
+  cell!.classList.add("checked")
 
   const bingos = bingo.check(sq)
   if(bingos.length > 0) {
